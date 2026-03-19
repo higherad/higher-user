@@ -33,6 +33,28 @@ const PATHS = {
   paid:    'ha/paid_slots',
 };
 
+// ── 텔레그램 알림 설정 ────────────────────────────────────────
+const TELEGRAM = {
+  token:  '8696324609:AAFo10CLRJiWdDahGtCqHfLKY16HsHZOnE8',
+  chatId: '6071423703',
+};
+
+async function sendTelegram(message) {
+  try {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM.token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TELEGRAM.chatId,
+        text: message,
+        parse_mode: 'HTML',
+      }),
+    });
+  } catch (e) {
+    console.warn('텔레그램 알림 실패:', e);
+  }
+}
+
 // ── 유틸: Firebase 스냅샷 → 배열 변환 ───────────────────────
 function snapToArray(snapshot) {
   if (!snapshot.exists()) return [];
@@ -119,6 +141,22 @@ const HA = {
     const newRef = await push(ref(db, PATHS.slots), newSlot);
     const result = { ...newSlot, _key: newRef.key };
     dispatch('ha:slots:updated');
+
+    // ── 텔레그램 알림 발송 ──────────────────────────────────
+    const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+    await sendTelegram(
+`📥 <b>새 슬롯 접수</b>
+━━━━━━━━━━━━━━━━
+🏷 슬롯타입: ${newSlot.slotType}
+🏪 스토어명: ${newSlot.storeName}
+🔑 순위키워드: ${newSlot.rankKeyword}
+👤 업체: ${newSlot.agencyId} / ${newSlot.userId}
+📅 기간: ${newSlot.startDate} ~ ${newSlot.endDate}
+⏰ 접수시간: ${now}
+━━━━━━━━━━━━━━━━
+👉 어드민에서 확인하세요`
+    );
+
     return result;
   },
 

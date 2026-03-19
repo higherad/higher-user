@@ -287,7 +287,7 @@
       <select id="f-type" onchange="renderMySlots()">
         <option value="">슬롯타입 전체</option>
       </select>
-      <input type="text" id="f-kw" placeholder="스토어명/키워드 검색">
+      <input type="text" id="f-kw" placeholder="업체명/키워드 검색">
       <button class="btn-search" onclick="renderMySlots()">검색</button>
       <button class="btn-apply-sm" onclick="location.href='user-apply.html'">
         <i data-lucide="plus" size="13"></i> 슬롯 신청
@@ -305,19 +305,18 @@
   </div>
 </main>
 
-<script type="module">
-  import HA from './ha-store.js';
-
-  // ── 인증 확인 ─────────────────────────────────────────────
+<script src="ha-store.js"></script>
+<script>
+  // ── 인증 확인 ────────────────────────────────────────────────
   const user = HA.getCurrentUser();
   if (!user || user.role === 'admin') location.href = 'user-login.html';
 
-  // ── 유저 정보 세팅 ────────────────────────────────────────
+  // ── 유저 정보 세팅 ───────────────────────────────────────────
   document.getElementById('user-name').textContent = user.username;
   document.getElementById('user-avatar').textContent = user.username.charAt(0).toUpperCase();
   document.getElementById('welcome-msg').textContent = `안녕하세요, ${user.username} 님 👋`;
 
-  // ── 슬롯 타입 옵션 채우기 ─────────────────────────────────
+  // ── 슬롯 타입 옵션 채우기 ────────────────────────────────────
   const typeSelect = document.getElementById('f-type');
   HA.SLOT_TYPES.forEach(t => {
     const o = document.createElement('option');
@@ -325,26 +324,8 @@
     typeSelect.appendChild(o);
   });
 
-  // ── 공통 헬퍼 ────────────────────────────────────────────
-  function getDday(endDate) {
-    const today = new Date(); today.setHours(0,0,0,0);
-    const end   = new Date(endDate); end.setHours(0,0,0,0);
-    return Math.ceil((end - today) / 86400000);
-  }
-  function ddayBadge(d) {
-    if (d <= 3) return `<span class="dday-badge dday-urgent">D-${d}</span>`;
-    if (d <= 7) return `<span class="dday-badge dday-soon">D-${d}</span>`;
-    return `<span class="dday-badge dday-ok">D-${d}</span>`;
-  }
-  const statusBadge = {
-    pending:  '<span class="status-badge s-pending">승인대기</span>',
-    active:   '<span class="status-badge s-active">진행중</span>',
-    rejected: '<span class="status-badge s-rejected">반려</span>',
-    expired:  '<span class="status-badge s-expired">만료</span>',
-  };
-
-  // ── 탭 전환 ───────────────────────────────────────────────
-  window.switchTab = function(tab) {
+  // ── 탭 전환 ─────────────────────────────────────────────────
+  function switchTab(tab) {
     ['home','slots','notices'].forEach(t => {
       document.getElementById('content-'+t).classList.toggle('active', t===tab);
       document.getElementById('tab-'+t).classList.toggle('active', t===tab);
@@ -353,17 +334,36 @@
     if (tab==='slots')   renderMySlots();
     if (tab==='notices') renderAllNotices();
     window.scrollTo(0,0);
+  }
+
+  // ── D-Day 계산 ───────────────────────────────────────────────
+  function getDday(endDate) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const end   = new Date(endDate); end.setHours(0,0,0,0);
+    return Math.ceil((end - today) / 86400000);
+  }
+  function ddayBadge(d) {
+    if (d <= 3)  return `<span class="dday-badge dday-urgent">D-${d}</span>`;
+    if (d <= 7)  return `<span class="dday-badge dday-soon">D-${d}</span>`;
+    return `<span class="dday-badge dday-ok">D-${d}</span>`;
+  }
+
+  // ── 상태 배지 ────────────────────────────────────────────────
+  const statusBadge = {
+    pending:  '<span class="status-badge s-pending">승인대기</span>',
+    active:   '<span class="status-badge s-active">진행중</span>',
+    rejected: '<span class="status-badge s-rejected">반려</span>',
+    expired:  '<span class="status-badge s-expired">만료</span>',
   };
 
-  // ── 홈 렌더 ───────────────────────────────────────────────
-  async function renderHome() {
-    // Firebase에서 내 슬롯 + 공지 병렬 로드
-    const [allSlots, allNotices] = await Promise.all([
-      HA.getSlots(),
-      HA.getNotices(),
-    ]);
+  // ── 내 슬롯 가져오기 ─────────────────────────────────────────
+  function getMySlots() {
+    return HA.getSlots().filter(s => s.userId === user.username);
+  }
 
-    const mySlots = allSlots.filter(s => s.userId === user.username);
+  // ── 홈 렌더 ─────────────────────────────────────────────────
+  function renderHome() {
+    const mySlots = getMySlots();
     const active  = mySlots.filter(s => s.status === 'active');
     const pending = mySlots.filter(s => s.status === 'pending');
     const today   = new Date(); today.setHours(0,0,0,0);
@@ -393,6 +393,7 @@
         <div class="stat-value">${pending.length}<span class="stat-unit">건</span></div>
       </div>`;
 
+    // 최근 슬롯 5개
     const recent = mySlots.slice(0, 5);
     const tbl = document.getElementById('home-recent-table');
     if (!recent.length) {
@@ -403,40 +404,41 @@
     } else {
       tbl.innerHTML = `<table>
         <thead><tr>
-          <th>슬롯타입</th><th>스토어명</th><th>순위키워드</th>
-          <th>기간</th><th>D-Day</th><th>순위</th><th>상태</th>
+          <th>슬롯타입</th><th>업체명</th><th>순위키워드</th>
+          <th>일 수</th><th>시작일</th><th>종료일</th><th>일 목표</th><th>상태</th>
         </tr></thead>
         <tbody>${recent.map(s => `<tr>
           <td><span style="background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:11px">${s.slotType}</span></td>
           <td style="font-weight:500">${s.storeName||'-'}</td>
           <td style="color:var(--text2)">${s.rankKeyword||'-'}</td>
-          <td style="color:var(--text2);font-size:12px">${s.startDate} ~ ${s.endDate}</td>
-          <td>${s.status==='active' ? ddayBadge(getDday(s.endDate)) : '-'}</td>
-          <td>${s.rank ? `<span class="rank-badge">${s.rank}위</span>` : '<span style="color:var(--muted)">-</span>'}</td>
+          <td style="color:var(--text2)">${s.days||'-'}</td>
+          <td style="color:var(--text2);font-size:12px">${s.startDate||'-'}</td>
+          <td style="color:var(--text2);font-size:12px">${s.endDate||'-'}</td>
+          <td style="color:var(--text2)">${s.dailyTarget ? s.dailyTarget.toLocaleString() : '-'}</td>
           <td>${statusBadge[s.status]||s.status}</td>
         </tr>`).join('')}</tbody>
       </table>`;
     }
 
-    const notices = allNotices.slice(0, 4);
+    // 공지 4개
+    const notices = HA.getNotices().slice(0,4);
     document.getElementById('home-notices').innerHTML = notices.map(n => `
-      <div class="notice-item" onclick="openNotice('${n._key}')">
+      <div class="notice-item" onclick="openNotice(${n.id})">
         ${n.pinned ? '<div class="pin-dot"></div>' : '<div class="normal-dot"></div>'}
         <span class="notice-title">${n.title}</span>
-        <span class="notice-meta">${(n.date||'').slice(0,10)}</span>
+        <span class="notice-meta">${n.date.slice(0,10)}</span>
       </div>`).join('');
 
     lucide.createIcons();
   }
 
-  // ── 내 슬롯 전체 렌더 ─────────────────────────────────────
-  window.renderMySlots = async function() {
+  // ── 내 슬롯 전체 렌더 ───────────────────────────────────────
+  function renderMySlots() {
     const status = document.getElementById('f-status').value;
     const type   = document.getElementById('f-type').value;
     const kw     = (document.getElementById('f-kw').value||'').toLowerCase();
 
-    const allSlots = await HA.getSlots();
-    let slots = allSlots.filter(s => s.userId === user.username).filter(s => {
+    let slots = getMySlots().filter(s => {
       if (status && s.status !== status) return false;
       if (type   && s.slotType !== type) return false;
       if (kw && ![(s.storeName||''),(s.rankKeyword||'')].some(v=>v.toLowerCase().includes(kw))) return false;
@@ -454,8 +456,8 @@
 
     tbl.innerHTML = `<table>
       <thead><tr>
-        <th>슬롯타입</th><th>스토어명</th><th>순위키워드</th><th>URL</th>
-        <th>시작일</th><th>종료일</th><th>D-Day</th><th>순위</th><th>유입수</th><th>상태</th>
+        <th>슬롯타입</th><th>업체명</th><th>순위키워드</th><th>URL</th>
+        <th>MID</th><th>일 수</th><th>시작일</th><th>종료일</th><th>일 목표</th><th>상태</th>
       </tr></thead>
       <tbody>${slots.map(s => `<tr>
         <td><span style="background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:11px">${s.slotType}</span></td>
@@ -464,36 +466,34 @@
         <td style="font-size:11px;color:var(--text2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
           <a href="${s.url}" target="_blank" style="color:var(--info)">${s.url||'-'}</a>
         </td>
-        <td style="color:var(--text2)">${s.startDate}</td>
-        <td style="color:var(--text2)">${s.endDate}</td>
-        <td>${s.status==='active' ? ddayBadge(getDday(s.endDate)) : '-'}</td>
-        <td>${s.rank ? `<span class="rank-badge">${s.rank}위</span>` : '<span style="color:var(--muted)">-</span>'}</td>
-        <td><strong>${(s.inflow||0).toLocaleString()}</strong></td>
+        <td style="color:var(--text2)">${s.mid||'-'}</td>
+        <td style="color:var(--text2)">${s.days||'-'}</td>
+        <td style="color:var(--text2)">${s.startDate||'-'}</td>
+        <td style="color:var(--text2)">${s.endDate||'-'}</td>
+        <td style="color:var(--text2)">${s.dailyTarget ? s.dailyTarget.toLocaleString() : '-'}</td>
         <td>${statusBadge[s.status]||s.status}
           ${s.status==='rejected' && s.rejectReason ? `<br><small style="color:var(--danger);font-size:10px">${s.rejectReason}</small>` : ''}
         </td>
       </tr>`).join('')}
       </tbody></table>`;
     lucide.createIcons();
-  };
+  }
 
-  // ── 공지사항 렌더 ─────────────────────────────────────────
-  window.renderAllNotices = async function() {
-    const notices = await HA.getNotices();
+  // ── 공지사항 렌더 ────────────────────────────────────────────
+  function renderAllNotices() {
+    const notices = HA.getNotices();
     document.getElementById('all-notices').innerHTML = notices.map(n => `
-      <div class="notice-item" onclick="openNotice('${n._key}')">
+      <div class="notice-item" onclick="openNotice(${n.id})">
         ${n.pinned ? '<div class="pin-dot"></div>' : '<div class="normal-dot"></div>'}
         <span class="notice-title">${n.title}</span>
-        <span class="notice-meta">${(n.date||'').slice(0,10)} · 조회 ${n.views||0}</span>
+        <span class="notice-meta">${n.date.slice(0,10)} · 조회 ${n.views}</span>
       </div>`).join('');
-  };
+  }
 
-  // 공지 상세 (캐시 없이 직접 조회)
-  window.openNotice = async function(key) {
-    const notices = await HA.getNotices();
-    const n = notices.find(x => x._key === key);
+  function openNotice(id) {
+    const n = HA.getNotices().find(x=>x.id===id);
     if (!n) return;
-    await HA.updateNotice(key, { views: (n.views||0)+1 });
+    HA.updateNotice(id, { views: n.views+1 });
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
     overlay.innerHTML = `
@@ -506,14 +506,14 @@
         </div>
       </div>`;
     document.body.appendChild(overlay);
-  };
+  }
 
-  window.doLogout = function() {
+  function doLogout() {
     HA.logout();
-    location.href = 'index.html';
-  };
+    location.href = 'user-login.html';
+  }
 
-  // ── 초기 렌더 ─────────────────────────────────────────────
+  // ── 초기 렌더 ────────────────────────────────────────────────
   renderHome();
   lucide.createIcons();
 </script>

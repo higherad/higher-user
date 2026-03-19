@@ -273,6 +273,19 @@
           <button type="button" class="duration-btn" onclick="setDuration(60)">60일</button>
           <button type="button" class="duration-btn" onclick="setDuration(90)">90일</button>
         </div>
+        <div class="form-row" style="margin-top:14px;">
+          <div class="form-field">
+            <label><span class="required-dot"></span> 일 수</label>
+            <input id="f-days" type="number" placeholder="예: 7" min="1">
+            <div class="field-hint">운영 기간(일수)을 입력해주세요.</div>
+            <div class="field-error" id="err-days">일 수를 입력해주세요.</div>
+          </div>
+          <div class="form-field">
+            <label>일 목표 개수</label>
+            <input id="f-dailyTarget" type="number" placeholder="예: 1000" min="0">
+            <div class="field-hint">하루 목표 유입 수를 입력해주세요.</div>
+          </div>
+        </div>
       </div>
 
       <!-- 메모 -->
@@ -377,6 +390,7 @@
                 <th>MID</th>
                 <th>순위키워드</th>
                 <th>일수</th>
+                <th>일목표</th>
                 <th>시작일</th>
                 <th>상태</th>
               </tr>
@@ -496,6 +510,7 @@
     const s = new Date(start);
     s.setDate(s.getDate() + days);
     document.getElementById('f-endDate').value = fmt(s);
+    document.getElementById('f-days').value = days;
   };
 
   // ── 유효성 검사 ───────────────────────────────────────────
@@ -508,6 +523,7 @@
       {id:'f-url',        err:'err-url'},
       {id:'f-startDate',  err:'err-startDate'},
       {id:'f-endDate',    err:'err-endDate'},
+      {id:'f-days',       err:'err-days'},
     ];
     required.forEach(({id, err}) => {
       const el = document.getElementById(id);
@@ -553,6 +569,8 @@
       ] : []),
       ['시작일', document.getElementById('f-startDate').value],
       ['종료일', document.getElementById('f-endDate').value],
+      ['일 수',  document.getElementById('f-days').value + '일'],
+      ['일 목표', document.getElementById('f-dailyTarget').value ? document.getElementById('f-dailyTarget').value + '개' : '-'],
       ['메모',   document.getElementById('f-memo').value || '-'],
     ];
     document.getElementById('confirm-content').innerHTML = `
@@ -591,6 +609,8 @@
         sellerControl: meta.showSeller  ? document.getElementById('f-sellerControl').value : '',
         startDate:     document.getElementById('f-startDate').value,
         endDate:       document.getElementById('f-endDate').value,
+        days:          Number(document.getElementById('f-days').value) || 0,
+        dailyTarget:   Number(document.getElementById('f-dailyTarget').value) || 0,
         memo:          document.getElementById('f-memo').value,
       });
       document.getElementById('step-2').style.display = 'none';
@@ -657,7 +677,6 @@
           const mid         = String(r[2] || '').trim();
           const rankKeyword = String(r[3] || '').trim();
           const days        = Number(r[4]) || 30;
-          const dailyTarget = Number(r[6]) || 0;
           let startDate     = '';
 
           // 날짜 처리
@@ -676,7 +695,7 @@
           const endDate = fmt(endD);
 
           const valid = !!(storeName && url && rankKeyword && startDate);
-          return { storeName, url, mid, rankKeyword, days, dailyTarget, startDate, endDate, valid, error: valid ? '' : '필수값 누락' };
+          return { storeName, url, mid, rankKeyword, days, startDate, endDate, valid, error: valid ? '' : '필수값 누락' };
         });
 
         renderPreview();
@@ -700,6 +719,7 @@
         <td style="color:var(--text2)">${r.mid || '-'}</td>
         <td>${r.rankKeyword || '-'}</td>
         <td style="color:var(--text2)">${r.days}일</td>
+        <td style="color:var(--text2)">${r.dailyTarget ? r.dailyTarget.toLocaleString() : '-'}</td>
         <td style="color:var(--text2)">${r.startDate}</td>
         <td>${r.valid
           ? '<span class="row-status row-ok">정상</span>'
@@ -744,8 +764,6 @@
           mid:         row.mid,
           startDate:   row.startDate,
           endDate:     row.endDate,
-          days:        row.days,
-          dailyTarget: row.dailyTarget,
           workKeyword: '',
           memo:        '',
         });

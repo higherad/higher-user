@@ -179,7 +179,10 @@
     if (result.ok) {
       location.href = 'user-dashboard.html';
     } else {
-      document.getElementById('login-error').textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
+      const msg = result.reason === 'pending'
+        ? '관리자 승인 대기 중입니다. 승인 후 로그인 가능합니다.'
+        : '아이디 또는 비밀번호가 올바르지 않습니다.';
+      document.getElementById('login-error').textContent = msg;
       document.getElementById('login-error').classList.add('show');
       ['inp-id','inp-pw'].forEach(id => document.getElementById(id).classList.add('error'));
       btn.disabled = false;

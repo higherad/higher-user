@@ -243,8 +243,8 @@
   <div class="header-nav">
     <div class="nav-tab active" id="tab-home" onclick="switchTab('home')">대시보드</div>
     <div class="nav-tab" id="tab-slots" onclick="switchTab('slots')">내 슬롯</div>
-    <div class="nav-tab" id="tab-notices" onclick="switchTab('notices')">공지사항</div>
     <div class="nav-tab" id="tab-settle" onclick="switchTab('settle')">정산</div>
+    <div class="nav-tab" id="tab-notices" onclick="switchTab('notices')">공지사항</div>
   </div>
   <div class="header-right">
     <div class="header-user">
@@ -404,7 +404,7 @@
         <div class="stat-value">${active.reduce((a,s)=>a+(s.dailyTarget||0),0).toLocaleString()}<span class="stat-unit">개</span></div>
       </div>
       <div class="stat-card c-warn">
-        <div class="stat-icon warn"><i data-lucide="clock-alert" size="18"></i></div>
+        <div class="stat-icon warn"><i data-lucide="timer" size="18"></i></div>
         <div class="stat-label">만료 예정(3일)</div>
         <div class="stat-value">${expiring.length}<span class="stat-unit">건</span></div>
       </div>

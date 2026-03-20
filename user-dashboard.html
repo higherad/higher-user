@@ -325,8 +325,8 @@
   </div>
 </main>
 
-<script src="ha-store.js"></script>
-<script>
+<script type="module">
+  import HA from './ha-store.js';
   // ── 인증 확인 ────────────────────────────────────────────────
   const user = HA.getCurrentUser();
   if (!user || user.role === 'admin') location.href = 'user-login.html';

@@ -247,7 +247,7 @@
         </div>
         <div class="form-field">
           <label><span class="required-dot"></span> URL <small style="color:var(--muted);font-weight:400">(예: https://m.place.naver.com/...)</small></label>
-          <input id="f-url" type="url" placeholder="https://m.place.naver.com/...">
+          <input id="f-url" type="url" placeholder="https://m.place.naver.com/..." oninput="onUrlInput()">
           <div class="field-error" id="err-url">URL을 입력해주세요.</div>
         </div>
         <div class="form-row">
@@ -280,12 +280,13 @@
         <div class="form-row">
           <div class="form-field">
             <label>시작일</label>
-            <input id="f-startDate" type="text" readonly style="background:#f8fafc;color:var(--text2);cursor:default;">
+            <input id="f-startDate" type="date" oninput="autoCalcEndDate()">
+            <div class="field-hint">오늘 이후 날짜만 선택 가능합니다.</div>
           </div>
           <div class="form-field">
             <label>종료일</label>
             <input id="f-endDate" type="text" readonly style="background:#f8fafc;color:var(--text2);cursor:default;">
-            <div class="field-hint">일 수 입력 시 자동 계산됩니다.</div>
+            <div class="field-hint">시작일 + 일 수로 자동 계산됩니다.</div>
           </div>
         </div>
       </div>
@@ -463,11 +464,14 @@
   const user = HA.getCurrentUser();
   if (!user || user.role === 'admin') location.href = 'index.html';
 
-  // 기본 날짜 세팅 (오늘 날짜 텍스트로 표시, 수정 불가)
   const today = new Date();
   const fmt = d => d.toISOString().slice(0,10);
-  document.getElementById('f-startDate').value = fmt(today);
-  document.getElementById('f-endDate').value = fmt(today);
+  const todayStr = fmt(today);
+  // 시작일 기본값=오늘, min=오늘 (이전 날짜 선택 불가)
+  const startEl = document.getElementById('f-startDate');
+  startEl.value = todayStr;
+  startEl.min   = todayStr;
+  document.getElementById('f-endDate').value = todayStr;
 
   // ── 탭 전환 ───────────────────────────────────────────────
   window.switchMode = function(mode) {
@@ -492,15 +496,31 @@
     window.scrollTo(0,0);
   }
 
-  // ── 일 수 입력 시 종료일 자동 계산 (시작일 = 오늘 고정) ────
+  // ── URL 입력 시 MID 자동추출 ─────────────────────────────
+  window.onUrlInput = function() {
+    const url = document.getElementById('f-url').value.trim();
+    const mid = extractMidFromUrl(url);
+    if (mid) {
+      document.getElementById('f-mid').value = mid;
+      document.getElementById('f-mid').classList.remove('error');
+      document.getElementById('err-mid').style.display = 'none';
+    }
+    // 에러 초기화
+    document.getElementById('f-url').classList.remove('error');
+    document.getElementById('err-url').textContent = 'URL을 입력해주세요.';
+    document.getElementById('err-url').style.display = 'none';
+  };
+
+  // ── 일 수 또는 시작일 변경 시 종료일 자동 계산 ────────────
   window.autoCalcEndDate = function() {
-    const days = Number(document.getElementById('f-days').value);
-    if (days > 0) {
-      const s = new Date();
+    const days  = Number(document.getElementById('f-days').value);
+    const start = document.getElementById('f-startDate').value;
+    if (days > 0 && start) {
+      const s = new Date(start);
       s.setDate(s.getDate() + days);
       document.getElementById('f-endDate').value = fmt(s);
-    } else {
-      document.getElementById('f-endDate').value = fmt(new Date());
+    } else if (start) {
+      document.getElementById('f-endDate').value = start;
     }
   };
 
@@ -527,6 +547,38 @@
         if (errEl) errEl.style.display = 'none';
       }
     });
+
+    // URL 유효성 검사 (플레이스 주소)
+    const urlVal = document.getElementById('f-url').value.trim();
+    const urlErrEl = document.getElementById('err-url');
+    if (urlVal) {
+      const urlMid = extractMidFromUrl(urlVal);
+      if (!urlMid) {
+        document.getElementById('f-url').classList.add('error');
+        urlErrEl.textContent = '유효하지 않은 네이버 플레이스 주소입니다.';
+        urlErrEl.style.display = 'block';
+        ok = false;
+      } else {
+        // MID 불일치 검사
+        const midVal = document.getElementById('f-mid').value.trim();
+        if (midVal && midVal !== urlMid) {
+          document.getElementById('f-mid').classList.add('error');
+          document.getElementById('err-mid').textContent = `URL의 MID(${urlMid})와 입력한 MID가 다릅니다.`;
+          document.getElementById('err-mid').style.display = 'block';
+          ok = false;
+        }
+      }
+    }
+
+    // 시작일 오늘 이전 체크
+    const startVal = document.getElementById('f-startDate').value;
+    if (startVal && startVal < todayStr) {
+      document.getElementById('f-startDate').classList.add('error');
+      ok = false;
+    } else {
+      document.getElementById('f-startDate').classList.remove('error');
+    }
+
     return ok;
   }
 

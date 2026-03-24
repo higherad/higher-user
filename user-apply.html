@@ -424,6 +424,39 @@
 <script type="module">
   import HA from './ha-store.js';
 
+  function normalizeUrlForAdmin(url) {
+    return String(url || '').split('?')[0].trim();
+  }
+
+  const PLACE_URL_REGEX = /(?:place\.naver\.com|m\.place\.naver\.com)\/(?:restaurant|hospital|place|hairshop|nailshop)\/([0-9]+)/;
+  function extractMidFromUrl(url) {
+    const cleanUrl = normalizeUrlForAdmin(url);
+    const match = cleanUrl.match(PLACE_URL_REGEX);
+    return match ? match[1] : '';
+  }
+  function normalizeDateCell(value) {
+    if (typeof value === 'number' && value > 0) {
+      const d = new Date(Math.round((value - 25569) * 86400 * 1000));
+      return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
+    }
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+    const nums = raw.replace(/[^\d]/g, '-').split('-').filter(Boolean);
+    if (nums.length === 3) {
+      let [y, m, d] = nums;
+      if (y.length === 2) y = `20${y}`;
+      if (y.length !== 4) return '';
+      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    }
+    if (nums.length === 2) {
+      const y = String(new Date().getFullYear());
+      const [m, d] = nums;
+      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    }
+    return '';
+  }
+
   // ── 인증 확인 ─────────────────────────────────────────────
   const user = HA.getCurrentUser();
   if (!user || user.role === 'admin') location.href = 'index.html';
@@ -530,13 +563,14 @@
     btn.disabled = true;
     btn.innerHTML = '처리 중...';
     try {
+      const normalizedUrl = normalizeUrlForAdmin(document.getElementById('f-url').value);
       await HA.addSlot({
         agencyId:      user.agency || user.username,
         userId:        user.username,
         slotType:      '리워드',
         storeName:     document.getElementById('f-storeName').value,
         rankKeyword:   document.getElementById('f-rankKeyword').value,
-        url:           document.getElementById('f-url').value,
+        url:           normalizedUrl,
         mid:           document.getElementById('f-mid').value,
         workKeyword:   document.getElementById('f-workKeyword').value,
         compareUrl:    '',
@@ -607,33 +641,30 @@
         const dataRows = raw.slice(1).filter(r => r[0] || r[1]);
         excelRows = dataRows.map((r, i) => {
           const storeName   = String(r[0] || '').trim();
-          const url         = String(r[1] || '').trim();
+          const url         = normalizeUrlForAdmin(r[1]);
           const mid         = String(r[2] || '').trim();
           const rankKeyword = String(r[3] || '').trim();
           const days        = Number(r[4]) || 30;
           const dailyTarget = Number(r[6]) || 0;
-          let startDate     = '';
-
-          // 날짜 처리 — cellDates:false 이므로 항상 시리얼 숫자 또는 문자열
-          if (typeof r[5] === 'number' && r[5] > 0) {
-            // 엑셀 시리얼 날짜 → JS Date (UTC 기준 보정)
-            const d = new Date(Math.round((r[5] - 25569) * 86400 * 1000));
-            startDate = d.toISOString().slice(0,10);
-          } else if (typeof r[5] === 'string' && r[5].includes('-')) {
-            startDate = r[5].slice(0,10);
-          } else {
-            startDate = fmt(new Date());
-          }
+          const startDate = normalizeDateCell(r[5]);
 
           const endD = new Date(startDate);
           endD.setDate(endD.getDate() + days);
           const endDate = fmt(endD);
 
           const today_str = fmt(new Date());
-          const hasRequired = !!(storeName && url && rankKeyword && startDate);
-          const isPastDate  = startDate < today_str;
-          const valid = hasRequired && !isPastDate;
-          const error = !hasRequired ? '필수값 누락' : isPastDate ? '오늘 이전 시작일' : '';
+          const errors = [];
+          const urlMid = extractMidFromUrl(url);
+          if (!storeName) errors.push('업체명 누락');
+          if (!url) errors.push('URL 누락');
+          else if (!urlMid) errors.push('유효하지 않은 플레이스 주소');
+          if (!rankKeyword) errors.push('순위키워드 누락');
+          if (!startDate) errors.push('시작일 형식 오류');
+          else if (startDate < today_str) errors.push('오늘 이전 시작일');
+          if (mid && urlMid && mid !== urlMid) errors.push('URL MID와 입력 MID 불일치');
+
+          const valid = errors.length === 0;
+          const error = errors.join(' / ');
           return { storeName, url, mid, rankKeyword, days, dailyTarget, startDate, endDate, valid, error };
         });
 

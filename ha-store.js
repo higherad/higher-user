@@ -169,14 +169,13 @@ const HA = {
     const result = { ...newSlot, _key: newRef.key };
     dispatch('ha:slots:updated');
 
+
     // ── 텔레그램 배치 알림 (leading-timer) ─────────────────
     // 타이머가 없을 때만 새로 걸어둔다.
-    // 이미 타이머가 돌고 있으면 큐에만 추가하고 종료.
+    // 이미 타이머가 돌고 있으면 큐에만 추가하고 타이머는 건드리지 않음.
     _telegramBatch.queue.push(newSlot);
 
-    if (_telegramBatch.timer) return result; // 타이머 이미 실행 중 → 큐에만 쌓고 끝
-
-    _telegramBatch.timer = setTimeout(async () => {
+    if (!_telegramBatch.timer) _telegramBatch.timer = setTimeout(async () => {
       const batch = [..._telegramBatch.queue];
       _telegramBatch.queue = [];
       _telegramBatch.timer = null;

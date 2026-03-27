@@ -166,6 +166,7 @@
     .s-active   { background: rgba(16,185,129,.1);  color: #059669; }
     .s-rejected { background: rgba(239,68,68,.1);   color: #dc2626; }
     .s-expired  { background: #f1f5f9; color: var(--text2); }
+    .s-terminated { background: rgba(100,116,139,.12); color: #334155; }
 
     .rank-badge { color: var(--info); border: 1px solid var(--info); padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; }
     .dday-badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
@@ -361,6 +362,7 @@
         <option value="pending">승인대기</option>
         <option value="rejected">반려</option>
         <option value="expired">만료</option>
+        <option value="terminated">종료</option>
       </select>
       <select id="f-range" onchange="renderMySlots()">
         <option value="all" selected>전체 진행중</option>
@@ -434,10 +436,11 @@
 
   // ── 상태 배지 ────────────────────────────────────────────────
   const statusBadge = {
-    pending:  '<span class="status-badge s-pending">승인대기</span>',
-    active:   '<span class="status-badge s-active">진행중</span>',
-    rejected: '<span class="status-badge s-rejected">반려</span>',
-    expired:  '<span class="status-badge s-expired">만료</span>',
+    pending:    '<span class="status-badge s-pending">승인대기</span>',
+    active:     '<span class="status-badge s-active">진행중</span>',
+    rejected:   '<span class="status-badge s-rejected">반려</span>',
+    expired:    '<span class="status-badge s-expired">만료</span>',
+    terminated: '<span class="status-badge s-terminated">종료</span>',
   };
 
   // ── 내 슬롯 가져오기 ─────────────────────────────────────────
@@ -632,7 +635,7 @@
     const unitPrice = myUser ? (myUser.unitPrice || 0) : 0;
 
     const mySlots = allSlots.filter(s =>
-      s.userId === user.username && (s.status === 'active' || s.status === 'expired' || s.status === 'pending')
+      s.userId === user.username && (s.status === 'active' || s.status === 'expired' || s.status === 'pending' || s.status === 'terminated' || s.status === 'rejected')
     );
 
     const totalDailyTarget = mySlots.reduce((a,s) => a + (s.dailyTarget||0), 0);

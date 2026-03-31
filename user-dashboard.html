@@ -419,7 +419,7 @@
 
   // ── 인증 확인 ────────────────────────────────────────────────
   const user = HA.getCurrentUser();
-  if (!user || user.role === 'admin') location.href = 'user-login.html';
+  if (!user || user.role === 'admin') location.href = 'index.html';
 
   // ── 유저 정보 세팅 ───────────────────────────────────────────
   const displayName = user.agency || user.agencyId || user.username;
@@ -666,7 +666,7 @@
 
     // 슬롯 저장 단가 우선, 없으면 현재 유저 단가 (기존 데이터 호환)
     function getSlotPrice(s) {
-      return (s.unitPrice != null && s.unitPrice !== '') ? s.unitPrice : unitPrice;
+      return (s.unitPrice != null && s.unitPrice !== '' && s.unitPrice > 0) ? s.unitPrice : unitPrice;
     }
 
     function getSlotAmount(s) {
@@ -757,7 +757,7 @@
           ${dateStr}<br><span style="color:var(--accent);font-size:13px;font-weight:700">${timeStr}</span>
         </td>
         <td style="${tdStyle('font-weight:600')}">${Math.round(groupTotal).toLocaleString()}<small style="color:var(--muted);font-weight:400"> 개</small></td>
-        <td style="${tdStyle('color:var(--text2)')}">${unitPrice.toLocaleString()}<small style="color:var(--muted)"> 원</small></td>
+        <td style="${tdStyle('color:var(--text2)')}">${getSlotPrice(firstSlot).toLocaleString()}<small style="color:var(--muted)"> 원</small></td>
         <td style="${tdStyle('font-weight:700;color:var(--accent)')}">${Math.round(groupAmount).toLocaleString()}<small style="color:var(--muted);font-weight:400"> 원</small></td>
         <td style="${tdStyle('font-weight:700;color:#8b5cf6')}">${Math.round(groupAmount * 1.1).toLocaleString()}<small style="color:var(--muted);font-weight:400"> 원</small></td>
         <td style="${tdStyle()}">${paidLabel}</td>

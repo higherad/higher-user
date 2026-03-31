@@ -162,7 +162,11 @@
 
     const result = await HA.login(username, password);
     if (result.ok) {
-      location.href = 'user-dashboard.html';
+      if (result.user.role === 'admin' || result.user.role === 'staff') {
+        location.href = 'admin-login.html';
+      } else {
+        location.href = 'user-dashboard.html';
+      }
     } else {
       const msg = result.reason === 'pending'
         ? '관리자 승인 대기 중입니다. 승인 후 로그인 가능합니다.'

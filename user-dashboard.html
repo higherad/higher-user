@@ -786,12 +786,12 @@
             <div style="font-size:11px;color:var(--text2);margin-top:6px">${monthSlots.length}건 합산</div>
           </div>
           <div class="settle-card navy">
-            <div class="settle-label">일 정산 금액(VAT 별도) (오늘)</div>
+            <div class="settle-label">일 정산 금액(오늘)</div>
             <div class="settle-value" style="color:var(--info)">${Math.round(todayAmount).toLocaleString()}<span class="settle-unit">원</span></div>
             <div style="font-size:11px;color:var(--text2);margin-top:6px">${todaySlots.length}건 합산</div>
           </div>
           <div class="settle-card warn">
-            <div class="settle-label">미정산 금액(VAT 별도)</div>
+            <div class="settle-label">미정산 금액</div>
             <div class="settle-value" style="color:var(--warn)">${Math.round(unpaidAmount).toLocaleString()}<span class="settle-unit">원</span></div>
           </div>
         </div>

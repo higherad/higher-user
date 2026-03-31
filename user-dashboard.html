@@ -150,9 +150,10 @@
     }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     thead th {
-      background: var(--navy); color: #fff; padding: 12px 14px;
+      background: transparent; color: var(--text); padding: 12px 14px;
       font-weight: 500; text-align: center; white-space: nowrap;
-      border-right: 1px solid #2d3f55;
+      border-right: none;
+      display: none;
     }
     tbody td {
       padding: 12px 14px; border-bottom: 1px solid var(--border);
@@ -702,8 +703,7 @@
       const d = new Date(isoStr);
       const hh = String(d.getHours()).padStart(2,'0');
       const mm = String(d.getMinutes()).padStart(2,'0');
-      const ss = String(d.getSeconds()).padStart(2,'0');
-      return `${hh}:${mm}:${ss}`;
+      return `${hh}:${mm}`;
     }
     function getDateLabel(isoStr) {
       if (!isoStr) return '-';

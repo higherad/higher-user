@@ -143,7 +143,7 @@
       background: none; border: none; font-weight: 600;
     }
 
-    /* ── 슬롯 테이블 ── */
+    /* ── 캠페인 테이블 ── */
     .table-wrap {
       background: var(--card); border: 1px solid var(--border); border-radius: 12px;
       overflow-x: auto; margin-bottom: 24px;
@@ -298,7 +298,7 @@
   <div class="header-logo" onclick="switchTab('home')">HIGHER <span>AD</span></div>
   <div class="header-nav">
     <div class="nav-tab active" id="tab-home" onclick="switchTab('home')">대시보드</div>
-    <div class="nav-tab" id="tab-slots" onclick="switchTab('slots')">내 슬롯</div>
+    <div class="nav-tab" id="tab-slots" onclick="switchTab('slots')">내 캠페인</div>
     <div class="nav-tab" id="tab-settle" onclick="switchTab('settle')">정산</div>
     <div class="nav-tab" id="tab-notices" onclick="switchTab('notices')">공지사항</div>
   </div>
@@ -323,18 +323,18 @@
     <div class="welcome-banner">
       <div class="welcome-text">
         <h2 id="welcome-msg">안녕하세요 👋</h2>
-        <p>현재 운영 중인 슬롯 현황을 확인하고 새 슬롯을 신청하세요.</p>
+        <p>현재 운영 중인 캠페인 현황을 확인하고 새 캠페인을 신청하세요.</p>
       </div>
       <button class="btn-apply-main" onclick="location.href='user-apply.html'">
         <i data-lucide="plus-circle" size="16"></i>
-        새 슬롯 신청하기
+        새 캠페인 신청하기
       </button>
     </div>
 
     <div class="stat-grid" id="home-stats"></div>
 
     <div class="section-header">
-      <span class="section-title">최근 슬롯 현황</span>
+      <span class="section-title">최근 캠페인 현황</span>
       <button class="section-more" onclick="switchTab('slots')">전체보기</button>
     </div>
     <div class="table-wrap" id="home-recent-table"></div>
@@ -346,10 +346,10 @@
     <div class="notice-list" id="home-notices"></div>
   </div>
 
-  <!-- ── 내 슬롯 탭 ── -->
+  <!-- ── 내 캠페인 탭 ── -->
   <div class="tab-content" id="content-slots">
     <div class="section-header">
-      <span class="section-title">내 슬롯 관리</span>
+      <span class="section-title">내 캠페인 관리</span>
     </div>
     <!-- 요약바 -->
     <div id="my-slots-summary" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 20px;display:flex;gap:32px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
@@ -373,7 +373,7 @@
       <input type="text" id="f-kw" placeholder="스토어명/키워드 검색">
       <button class="btn-search" onclick="renderMySlots()">검색</button>
       <button class="btn-apply-sm" onclick="location.href='user-apply.html'">
-        <i data-lucide="plus" size="13"></i> 슬롯 신청
+        <i data-lucide="plus" size="13"></i> 캠페인 신청
       </button>
     </div>
     <div class="table-wrap" id="slots-table"></div>
@@ -443,7 +443,7 @@
     terminated: '<span class="status-badge s-terminated">종료</span>',
   };
 
-  // ── 내 슬롯 가져오기 ─────────────────────────────────────────
+  // ── 내 캠페인 가져오기 ─────────────────────────────────────────
   // ── 홈 렌더 ─────────────────────────────────────────────────
   async function renderHome() {
     const [allSlots, allNotices] = await Promise.all([
@@ -461,7 +461,7 @@
     document.getElementById('home-stats').innerHTML = `
       <div class="stat-card c-green">
         <div class="stat-icon green"><i data-lucide="layers" size="18"></i></div>
-        <div class="stat-label">진행중 슬롯</div>
+        <div class="stat-label">진행중 캠페인</div>
         <div class="stat-value">${active.length}<span class="stat-unit">개</span></div>
       </div>
       <div class="stat-card c-info">
@@ -480,13 +480,13 @@
         <div class="stat-value">${pending.length}<span class="stat-unit">건</span></div>
       </div>`;
 
-    // 최근 슬롯 5개
+    // 최근 캠페인 5개
     const recent = mySlots.slice(0, 5);
     const tbl = document.getElementById('home-recent-table');
     if (!recent.length) {
       tbl.innerHTML = `<div class="empty-state">
         <i data-lucide="inbox" size="40" style="color:var(--muted)"></i>
-        <p>신청한 슬롯이 없습니다.<br>새 슬롯 신청 버튼을 눌러 시작하세요.</p>
+        <p>신청한 캠페인이 없습니다.<br>새 캠페인 신청 버튼을 눌러 시작하세요.</p>
       </div>`;
     } else {
       tbl.innerHTML = `<table>
@@ -517,7 +517,7 @@
     lucide.createIcons();
   }
 
-  // ── 내 슬롯 전체 렌더 ───────────────────────────────────────
+  // ── 내 캠페인 전체 렌더 ───────────────────────────────────────
   window.renderMySlots = async function() {
     const status = document.getElementById('f-status').value;
     const range  = document.getElementById('f-range').value;
@@ -527,11 +527,11 @@
     const allSlots = await HA.getSlots();
     let mySlots = allSlots.filter(s => s.userId === user.username);
 
-    // 일자 필터 (active 슬롯에만 적용)
+    // 일자 필터 (active 캠페인에만 적용)
     let slots = mySlots.filter(s => {
       if (status && s.status !== status) return false;
       if (kw && ![(s.storeName||''),(s.rankKeyword||'')].some(v=>v.toLowerCase().includes(kw))) return false;
-      // 일자 필터: active 슬롯 + 오늘 이후 종료일만
+      // 일자 필터: active 캠페인 + 오늘 이후 종료일만
       if (range !== 'all') {
         if (s.status !== 'active') return false;
         const d = new Date(s.endDate); d.setHours(0,0,0,0);
@@ -544,7 +544,7 @@
       return true;
     });
 
-    // 요약바 (내 슬롯 기준, active만)
+    // 요약바 (내 캠페인 기준, active만)
     const activeSlots = mySlots.filter(s => {
       const d = new Date(s.endDate); d.setHours(0,0,0,0);
       return s.status === 'active' && d >= todayDt;
@@ -563,7 +563,7 @@
     if (!slots.length) {
       tbl.innerHTML = `<div class="empty-state">
         <i data-lucide="search-x" size="40" style="color:var(--muted)"></i>
-        <p>조건에 맞는 슬롯이 없습니다.</p>
+        <p>조건에 맞는 캠페인이 없습니다.</p>
       </div>`;
       lucide.createIcons(); return;
     }
@@ -668,14 +668,14 @@
       snapshotMap[date] = existingSnaps[safeKey];
     }));
 
-    // ── 슬롯별 금액 결정: 과거=스냅샷 비율 적용, 오늘=실시간 ──
-    // 과거 날짜는 스냅샷 amount를 슬롯 수로 나눠 균등 배분
-    // (슬롯이 삭제돼도 스냅샷 총액 기준 유지)
+    // ── 캠페인별 금액 결정: 과거=스냅샷 비율 적용, 오늘=실시간 ──
+    // 과거 날짜는 스냅샷 amount를 캠페인 수로 나눠 균등 배분
+    // (캠페인이 삭제돼도 스냅샷 총액 기준 유지)
     function getSlotAmount(s) {
       const d = (s.createdAt||'').slice(0,10);
       if (d < todayStr && snapshotMap[d]) {
         const snap = snapshotMap[d];
-        // 스냅샷 총액을 슬롯 수로 균등 배분
+        // 스냅샷 총액을 캠페인 수로 균등 배분
         return snap.slotCount > 0 ? snap.amount / snap.slotCount : 0;
       }
       return (s.dailyTarget||0) * (s.days||0) * unitPrice;

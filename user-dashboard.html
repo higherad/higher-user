@@ -664,46 +664,15 @@
       s.userId === user.username && (s.status === 'active' || s.status === 'expired' || s.status === 'pending' || s.status === 'terminated' || s.status === 'rejected')
     );
 
-    // ── 과거 날짜 스냅샷 로드 ─────────────────────────────────
-    const pastDates = [...new Set(
-      mySlots
-        .map(s => (s.createdAt||'').slice(0,10))
-        .filter(d => d && d < todayStr)
-    )];
-
-    const snapshotMap = {};
-    await Promise.all(pastDates.map(async date => {
-      const existingSnaps = await HA.getSettleSnapshots(date);
-      const daySlots = mySlots.filter(s => (s.createdAt||'').slice(0,10) === date);
-      const safe = s => s.replace(/[.#$[\]/]/g, '_');
-      const agencyId = daySlots[0]?.agencyId || '-';
-      const safeKey  = safe(agencyId) + '__' + safe(user.username);
-
-      if (!existingSnaps[safeKey]) {
-        const tot  = daySlots.reduce((a,s) => a+(s.dailyTarget||0)*(s.days||0), 0);
-        const amt  = daySlots.reduce((a,s) => a+(s.dailyTarget||0)*(s.days||0)*unitPrice, 0);
-        const paidA= daySlots.filter(s=>paidSet.has(s._key)).reduce((a,s)=>a+(s.dailyTarget||0)*(s.days||0)*unitPrice,0);
-        const snap = { slotCount:daySlots.length, totalTarget:tot, amount:amt, paidAmount:paidA, unitPrice, agencyId, userId:user.username };
-        await HA.saveSettleSnapshot(date, agencyId, user.username, snap);
-        existingSnaps[safeKey] = snap;
-      }
-      snapshotMap[date] = existingSnaps[safeKey];
-    }));
+    // 슬롯 저장 단가 우선, 없으면 현재 유저 단가 (기존 데이터 호환)
+    function getSlotPrice(s) {
+      return (s.unitPrice != null && s.unitPrice !== '') ? s.unitPrice : unitPrice;
+    }
 
     function getSlotAmount(s) {
-      const d = (s.createdAt||'').slice(0,10);
-      if (d < todayStr && snapshotMap[d]) {
-        const snap = snapshotMap[d];
-        return snap.slotCount > 0 ? snap.amount / snap.slotCount : 0;
-      }
-      return (s.dailyTarget||0) * (s.days||0) * unitPrice;
+      return (s.dailyTarget||0) * (s.days||0) * getSlotPrice(s);
     }
     function getSlotTarget(s) {
-      const d = (s.createdAt||'').slice(0,10);
-      if (d < todayStr && snapshotMap[d]) {
-        const snap = snapshotMap[d];
-        return snap.slotCount > 0 ? snap.totalTarget / snap.slotCount : 0;
-      }
       return (s.dailyTarget||0) * (s.days||0);
     }
 

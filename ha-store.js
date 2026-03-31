@@ -152,6 +152,15 @@ const HA = {
   },
 
   async addSlot(data) {
+    // 접수 시점 단가 스냅샷: userId로 현재 단가 조회 후 슬롯에 저장
+    let unitPriceSnapshot = 0;
+    try {
+      const uSnap = await get(ref(db, PATHS.users));
+      const users = snapToArray(uSnap);
+      const u = users.find(u => u.username === (data.userId || ''));
+      unitPriceSnapshot = u ? (u.unitPrice || 0) : 0;
+    } catch(e) {}
+
     const newSlot = {
       status:        'pending',
       createdAt:     new Date().toISOString(),
@@ -171,6 +180,7 @@ const HA = {
       memo:          data.memo          || '',
       days:          Number(data.days)        || 0,
       dailyTarget:   Number(data.dailyTarget) || 0,
+      unitPrice:     unitPriceSnapshot,
       rank:          null,
       inflow:        0,
     };
@@ -202,7 +212,7 @@ const HA = {
 • 전체 목표: ${totalTarget.toLocaleString()}개
 • 단가: ${unitPrice.toLocaleString()}원
 • 금액: ${amount.toLocaleString()}원(VAT 별도)
-• 입금액: ${amountVat.toLocaleString()}원(VAT 포함)
+• 입금액: ${amountVat.toLocaleString()}원 (VAT 포함)
 ⏰ 접수시간: ${now}
 ━━━━━━━━━━━━━━━━
 👉 <a href="https://higherad.kro.kr/">어드민에서 확인하세요</a>`
@@ -235,7 +245,7 @@ const HA = {
 • 전체 목표: ${totalTarget.toLocaleString()}개
 • 단가: ${unitPrice.toLocaleString()}원
 • 금액: ${amount.toLocaleString()}원(VAT 별도)
-• 입금액: ${amountVat.toLocaleString()}원(VAT 포함)
+• 입금액: ${amountVat.toLocaleString()}원 (VAT 포함)
 ⏰ 접수시간: ${now}
 ━━━━━━━━━━━━━━━━
 👉 <a href="https://higherad.kro.kr/">어드민에서 확인하세요</a>`

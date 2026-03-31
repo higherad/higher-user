@@ -388,7 +388,7 @@
         <option value="7">7일 이내</option>
         <option value="14">14일 이내</option>
       </select>
-      <input type="text" id="f-kw" placeholder="스토어명/키워드 검색">
+      <input type="text" id="f-kw" placeholder="플레이스명/키워드 검색">
       <button class="btn-search" onclick="renderMySlots()">검색</button>
       <button class="btn-apply-sm" onclick="location.href='user-apply.html'">
         <i data-lucide="plus" size="13"></i> 캠페인 신청
@@ -509,7 +509,7 @@
     } else {
       tbl.innerHTML = `<table>
         <thead><tr>
-          <th>스토어명</th><th>순위키워드</th>
+          <th>플레이스명</th><th>순위키워드</th>
           <th>기간</th><th>일 목표</th><th>D-Day</th><th>상태</th>
         </tr></thead>
         <tbody>${recent.map(s => `<tr>
@@ -588,7 +588,7 @@
 
     tbl.innerHTML = `<table>
       <thead><tr>
-        <th>스토어명</th><th>MID</th><th>순위키워드</th>
+        <th>플레이스명</th><th>MID</th><th>순위키워드</th>
         <th>일 수</th><th>시작일</th><th>종료일</th><th>일 목표</th><th>D-Day</th><th>상태</th>
       </tr></thead>
       <tbody>${slots.map(s => `<tr>

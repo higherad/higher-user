@@ -785,17 +785,17 @@
           <div class="settle-card purple">
             <div class="settle-label">${monthLabel} 정산 금액(VAT 포함)</div>
             <div class="settle-value" style="color:#8b5cf6">${Math.round(monthAmount * 1.1).toLocaleString()}<span class="settle-unit">원</span></div>
-            <div style="font-size:11px;color:var(--text2);margin-top:6px">VAT 별도 ${Math.round(monthAmount).toLocaleString()}원 · ${monthSlots.length}건 합산</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:6px">${monthSlots.length}건</div>
           </div>
           <div class="settle-card navy">
-            <div class="settle-label">일 정산 금액(VAT 포함) (오늘)</div>
+            <div class="settle-label">일 정산 금액(VAT 포함)</div>
             <div class="settle-value" style="color:var(--info)">${Math.round(todayAmount * 1.1).toLocaleString()}<span class="settle-unit">원</span></div>
-            <div style="font-size:11px;color:var(--text2);margin-top:6px">VAT 별도 ${Math.round(todayAmount).toLocaleString()}원 · ${todaySlots.length}건 합산</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:6px">${todaySlots.length}건</div>
           </div>
           <div class="settle-card warn">
             <div class="settle-label">미정산 금액(VAT 포함)</div>
             <div class="settle-value" style="color:var(--warn)">${Math.round(unpaidAmount * 1.1).toLocaleString()}<span class="settle-unit">원</span></div>
-            <div style="font-size:11px;color:var(--text2);margin-top:6px">VAT 별도 ${Math.round(unpaidAmount).toLocaleString()}원</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:6px">${mySlots.filter(s => !paidSet.has(s._key)).length}건</div>
           </div>
         </div>
       </div>

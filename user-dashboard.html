@@ -366,11 +366,11 @@
       </select>
       <select id="f-range" onchange="renderMySlots()">
         <option value="all" selected>전체 진행중</option>
-        <option value="3">3일 이내 만료</option>
-        <option value="7">7일 이내 만료</option>
-        <option value="14">14일 이내 만료</option>
+        <option value="3">3일 이내</option>
+        <option value="7">7일 이내</option>
+        <option value="14">14일 이내</option>
       </select>
-      <input type="text" id="f-kw" placeholder="스토어명/MID/키워드 검색">
+      <input type="text" id="f-kw" placeholder="스토어명/키워드 검색">
       <button class="btn-search" onclick="renderMySlots()">검색</button>
       <button class="btn-apply-sm" onclick="location.href='user-apply.html'">
         <i data-lucide="plus" size="13"></i> 슬롯 신청
@@ -467,7 +467,7 @@
       <div class="stat-card c-info">
         <div class="stat-icon info"><i data-lucide="trending-up" size="18"></i></div>
         <div class="stat-label">진행중 전체 목표</div>
-        <div class="stat-value">${active.reduce((a,s)=>a+(s.dailyTarget||0)*(s.days||0),0).toLocaleString()}<span class="stat-unit">개</span></div>
+        <div class="stat-value">${active.reduce((a,s)=>a+(s.dailyTarget||0),0).toLocaleString()}<span class="stat-unit">개</span></div>
       </div>
       <div class="stat-card c-warn">
         <div class="stat-icon warn"><i data-lucide="timer" size="18"></i></div>
@@ -530,7 +530,7 @@
     // 일자 필터 (active 슬롯에만 적용)
     let slots = mySlots.filter(s => {
       if (status && s.status !== status) return false;
-      if (kw && ![(s.storeName||''),(s.rankKeyword||''),(s.mid||'')].some(v=>v.toLowerCase().includes(kw))) return false;
+      if (kw && ![(s.storeName||''),(s.rankKeyword||'')].some(v=>v.toLowerCase().includes(kw))) return false;
       // 일자 필터: active 슬롯 + 오늘 이후 종료일만
       if (range !== 'all') {
         if (s.status !== 'active') return false;
@@ -554,9 +554,9 @@
     const t14 = activeSlots.filter(s => { const d=getDday(s.endDate); return d>=8 && d<=14; }).length;
     const sumEl = document.getElementById('my-slots-summary');
     let summaryItems = `<div style="font-size:11px;color:var(--text2);margin-bottom:2px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;min-width:60px">진행중<br><span style="font-size:18px;font-weight:800;color:var(--accent)">${activeSlots.length}<small style="font-size:11px;color:var(--muted);font-weight:400"> 개</small></span></div>`;
-    if(range==='3'||range==='7'||range==='14'||range==='all') summaryItems += `<div style="font-size:11px;color:var(--text2);margin-bottom:2px;font-weight:600">3일 이내 만료<br><span style="font-size:18px;font-weight:800;color:var(--danger)">${t3}<small style="font-size:11px;color:var(--muted);font-weight:400"> 건</small></span></div>`;
-    if(range==='7'||range==='14'||range==='all') summaryItems += `<div style="font-size:11px;color:var(--text2);margin-bottom:2px;font-weight:600">7일 이내 만료<br><span style="font-size:18px;font-weight:800;color:var(--warn)">${t7}<small style="font-size:11px;color:var(--muted);font-weight:400"> 건</small></span></div>`;
-    if(range==='14'||range==='all') summaryItems += `<div style="font-size:11px;color:var(--text2);margin-bottom:2px;font-weight:600">14일 이내 만료<br><span style="font-size:18px;font-weight:800;color:var(--info)">${t14}<small style="font-size:11px;color:var(--muted);font-weight:400"> 건</small></span></div>`;
+    if(range==='3'||range==='7'||range==='14'||range==='all') summaryItems += `<div style="font-size:11px;color:var(--text2);margin-bottom:2px;font-weight:600">3일 이내<br><span style="font-size:18px;font-weight:800;color:var(--danger)">${t3}<small style="font-size:11px;color:var(--muted);font-weight:400"> 건</small></span></div>`;
+    if(range==='7'||range==='14'||range==='all') summaryItems += `<div style="font-size:11px;color:var(--text2);margin-bottom:2px;font-weight:600">7일 이내<br><span style="font-size:18px;font-weight:800;color:var(--warn)">${t7}<small style="font-size:11px;color:var(--muted);font-weight:400"> 건</small></span></div>`;
+    if(range==='14'||range==='all') summaryItems += `<div style="font-size:11px;color:var(--text2);margin-bottom:2px;font-weight:600">14일 이내<br><span style="font-size:18px;font-weight:800;color:var(--info)">${t14}<small style="font-size:11px;color:var(--muted);font-weight:400"> 건</small></span></div>`;
     sumEl.innerHTML = summaryItems;
 
     const tbl = document.getElementById('slots-table');
@@ -571,7 +571,7 @@
     tbl.innerHTML = `<table>
       <thead><tr>
         <th>스토어명</th><th>MID</th><th>순위키워드</th>
-        <th>일 수</th><th>시작일</th><th>종료일</th><th>일 목표</th><th>D-Day</th><th>상태</th>
+        <th>일 수</th><th>시작일</th><th>종료일</th><th>D-Day</th><th>일 목표</th><th>상태</th>
       </tr></thead>
       <tbody>${slots.map(s => `<tr>
         <td style="font-weight:500">${s.url ? `<a href="${s.url}" target="_blank" style="color:var(--text);text-decoration:none;font-weight:600;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text)'">${s.storeName||'-'}</a>` : (s.storeName||'-')}</td>
@@ -580,8 +580,8 @@
         <td style="color:var(--text2)">${s.days||'-'}</td>
         <td style="color:var(--text2)">${s.startDate||'-'}</td>
         <td style="color:var(--text2)">${s.endDate||'-'}</td>
-        <td><strong>${(s.dailyTarget||0).toLocaleString()}</strong></td>
         <td>${s.status==='active' ? ddayBadge(getDday(s.endDate)) : '-'}</td>
+        <td><strong>${(s.dailyTarget||0).toLocaleString()}</strong></td>
         <td>${statusBadge[s.status]||s.status}
           ${s.status==='rejected' && s.rejectReason ? `<br><small style="color:var(--danger);font-size:10px">${s.rejectReason}</small>` : ''}
         </td>
@@ -625,6 +625,8 @@
     if (!settleList) return;
     settleList.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">불러오는 중...</div>';
 
+    const todayStr = new Date().toISOString().slice(0,10);
+
     const [allSlots, allUsers, paidSet] = await Promise.all([
       HA.getSlots(),
       HA.getUsers(),
@@ -638,17 +640,65 @@
       s.userId === user.username && (s.status === 'active' || s.status === 'expired' || s.status === 'pending' || s.status === 'terminated' || s.status === 'rejected')
     );
 
-    const totalDailyTarget = mySlots.reduce((a,s) => a + (s.dailyTarget||0), 0);
-    const totalAmount      = mySlots.reduce((a,s) => a + (s.dailyTarget||0) * (s.days||0) * unitPrice, 0);
-    const paidAmount       = mySlots.filter(s => paidSet.has(s._key)).reduce((a,s) => a + (s.dailyTarget||0) * (s.days||0) * unitPrice, 0);
-    const unpaidAmount     = totalAmount - paidAmount;
+    // ── 과거 날짜 스냅샷 로드 ─────────────────────────────────
+    // 오늘 이전 접수일 목록 추출
+    const pastDates = [...new Set(
+      mySlots
+        .map(s => (s.createdAt||'').slice(0,10))
+        .filter(d => d && d < todayStr)
+    )];
+
+    // 날짜별 스냅샷 로드 & 없으면 저장
+    const snapshotMap = {}; // { "date||agencyId||userId": snap }
+    await Promise.all(pastDates.map(async date => {
+      const existingSnaps = await HA.getSettleSnapshots(date);
+      const daySlots = mySlots.filter(s => (s.createdAt||'').slice(0,10) === date);
+      const safe = s => s.replace(/[.#$[\]/]/g, '_');
+      const agencyId = daySlots[0]?.agencyId || '-';
+      const safeKey  = safe(agencyId) + '__' + safe(user.username);
+
+      if (!existingSnaps[safeKey]) {
+        const tot  = daySlots.reduce((a,s) => a+(s.dailyTarget||0)*(s.days||0), 0);
+        const amt  = daySlots.reduce((a,s) => a+(s.dailyTarget||0)*(s.days||0)*unitPrice, 0);
+        const paidA= daySlots.filter(s=>paidSet.has(s._key)).reduce((a,s)=>a+(s.dailyTarget||0)*(s.days||0)*unitPrice,0);
+        const snap = { slotCount:daySlots.length, totalTarget:tot, amount:amt, paidAmount:paidA, unitPrice, agencyId, userId:user.username };
+        await HA.saveSettleSnapshot(date, agencyId, user.username, snap);
+        existingSnaps[safeKey] = snap;
+      }
+      snapshotMap[date] = existingSnaps[safeKey];
+    }));
+
+    // ── 슬롯별 금액 결정: 과거=스냅샷 비율 적용, 오늘=실시간 ──
+    // 과거 날짜는 스냅샷 amount를 슬롯 수로 나눠 균등 배분
+    // (슬롯이 삭제돼도 스냅샷 총액 기준 유지)
+    function getSlotAmount(s) {
+      const d = (s.createdAt||'').slice(0,10);
+      if (d < todayStr && snapshotMap[d]) {
+        const snap = snapshotMap[d];
+        // 스냅샷 총액을 슬롯 수로 균등 배분
+        return snap.slotCount > 0 ? snap.amount / snap.slotCount : 0;
+      }
+      return (s.dailyTarget||0) * (s.days||0) * unitPrice;
+    }
+    function getSlotTarget(s) {
+      const d = (s.createdAt||'').slice(0,10);
+      if (d < todayStr && snapshotMap[d]) {
+        const snap = snapshotMap[d];
+        return snap.slotCount > 0 ? snap.totalTarget / snap.slotCount : 0;
+      }
+      return (s.dailyTarget||0) * (s.days||0);
+    }
+
+    const totalAmount  = mySlots.reduce((a,s) => a + getSlotAmount(s), 0);
+    const paidAmount   = mySlots.filter(s => paidSet.has(s._key)).reduce((a,s) => a + getSlotAmount(s), 0);
+    const unpaidAmount = totalAmount - paidAmount;
 
     settleList.innerHTML = `
       <div style="padding:20px 20px 0">
         <div class="settle-summary">
           <div class="settle-card">
-            <div class="settle-label">일 목표 합계</div>
-            <div class="settle-value">${totalDailyTarget.toLocaleString()}<span class="settle-unit">개</span></div>
+            <div class="settle-label">총 정산금액</div>
+            <div class="settle-value">${totalAmount.toLocaleString()}<span class="settle-unit">원</span></div>
             <div style="font-size:11px;color:var(--text2);margin-top:6px">단가: ${unitPrice.toLocaleString()}원/개</div>
           </div>
           <div class="settle-card warn">
@@ -667,6 +717,7 @@
             <thead>
               <tr>
                 <th style="background:var(--navy);color:#fff;padding:12px 14px;font-weight:500;text-align:center;white-space:nowrap">스토어명</th>
+                <th style="background:var(--navy);color:#fff;padding:12px 14px;font-weight:500;text-align:center;white-space:nowrap">접수일</th>
                 <th style="background:var(--navy);color:#fff;padding:12px 14px;font-weight:500;text-align:center;white-space:nowrap">시작일</th>
                 <th style="background:var(--navy);color:#fff;padding:12px 14px;font-weight:500;text-align:center;white-space:nowrap">종료일</th>
                 <th style="background:var(--navy);color:#fff;padding:12px 14px;font-weight:500;text-align:center;white-space:nowrap">일 수</th>
@@ -679,23 +730,27 @@
             </thead>
             <tbody>
               ${mySlots.length ? mySlots.map(s => {
-                const amount = (s.dailyTarget||0) * (s.days||0) * unitPrice;
-                const isPaid = paidSet.has(s._key);
-                const totalTarget = (s.dailyTarget||0) * (s.days||0);
+                const d        = (s.createdAt||'').slice(0,10);
+                const isPast   = d < todayStr && snapshotMap[d];
+                const amount   = getSlotAmount(s);
+                const totTgt   = getSlotTarget(s);
+                const isPaid   = paidSet.has(s._key);
+                const snapIcon = isPast ? ' 🔒' : '';
                 return `<tr>
                   <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:center;font-weight:500">${s.storeName||'-'}</td>
+                  <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:center;color:var(--text2);font-size:11px">${d||'-'}${snapIcon}</td>
                   <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:center;color:var(--text2)">${s.startDate||'-'}</td>
                   <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:center;color:var(--text2)">${s.endDate||'-'}</td>
                   <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:center;color:var(--text2)">${s.days||'-'}</td>
                   <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:center">${(s.dailyTarget||0).toLocaleString()}</td>
-                  <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:center;font-weight:600">${totalTarget.toLocaleString()}</td>
+                  <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:center;font-weight:600">${Math.round(totTgt).toLocaleString()}</td>
                   <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:center;color:var(--text2)">${unitPrice.toLocaleString()}원</td>
-                  <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:center;font-weight:700;color:var(--accent)">${amount.toLocaleString()}원</td>
+                  <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:center;font-weight:700;color:var(--accent)">${Math.round(amount).toLocaleString()}원</td>
                   <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:center">
                     ${isPaid ? '<span class="paid-badge">정산완료</span>' : '<span class="unpaid-badge">미정산</span>'}
                   </td>
                 </tr>`;
-              }).join('') : `<tr><td colspan="9" style="padding:60px;text-align:center;color:var(--muted)">정산 데이터가 없습니다.</td></tr>`}
+              }).join('') : `<tr><td colspan="10" style="padding:60px;text-align:center;color:var(--muted)">정산 데이터가 없습니다.</td></tr>`}
             </tbody>
           </table>
         </div>

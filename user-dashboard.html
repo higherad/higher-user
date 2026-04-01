@@ -388,8 +388,7 @@
         <option value="7">7일 이내</option>
         <option value="14">14일 이내</option>
       </select>
-      <input type="text" id="f-kw" placeholder="플레이스명/키워드 검색">
-      <input type="text" id="f-mid" placeholder="MID 검색" style="width:130px;">
+      <input type="text" id="f-kw" placeholder="플레이스명/MID/키워드 검색">
       <button class="btn-search" onclick="renderMySlots()">검색</button>
       <button class="btn-apply-sm" onclick="location.href='user-apply.html'">
         <i data-lucide="plus" size="13"></i> 캠페인 신청
@@ -541,7 +540,6 @@
     const status = document.getElementById('f-status').value;
     const range  = document.getElementById('f-range').value;
     const kw     = (document.getElementById('f-kw').value||'').toLowerCase();
-    const midKw  = (document.getElementById('f-mid').value||'').toLowerCase();
     const todayDt = new Date(); todayDt.setHours(0,0,0,0);
 
     const allSlots = await HA.getSlots();
@@ -550,8 +548,7 @@
     // 일자 필터 (active 캠페인에만 적용)
     let slots = mySlots.filter(s => {
       if (status && s.status !== status) return false;
-      if (kw && ![(s.storeName||''),(s.rankKeyword||'')].some(v=>v.toLowerCase().includes(kw))) return false;
-      if (midKw && !(s.mid||'').toLowerCase().includes(midKw)) return false;
+      if (kw && ![(s.storeName||''),(s.rankKeyword||''),(s.mid||'')].some(v=>v.toLowerCase().includes(kw))) return false;
       // 일자 필터: active 캠페인 + 오늘 이후 종료일만
       if (range !== 'all') {
         if (s.status !== 'active') return false;

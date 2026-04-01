@@ -695,9 +695,9 @@
     }
 
     // ── 금액 계산 ──────────────────────────────────────────────
-    // 전체 환불 합계 (유저 본인 관련 키만)
+    // 유저 본인 환불 합계만 (키에 userId 포함된 것만)
     const totalRefund = Object.entries(refundMap || {}).reduce((a, [k, v]) => {
-      return a + (v || 0);
+      return k.includes(`__${safe(user.username)}`) ? a + (v || 0) : a;
     }, 0);
 
     const totalAmount  = mySlots.reduce((a,s) => a + getSlotAmount(s), 0) - totalRefund;

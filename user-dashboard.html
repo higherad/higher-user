@@ -767,7 +767,7 @@
       const agencyId = group.slots[0]?.agencyId || '-';
       const userId2  = group.slots[0]?.userId   || '-';
       const snapKey  = `${safe(key)}__${safe(agencyId)}__${safe(userId2)}`;
-      if (snapshots[snapKey] && snapshots[snapKey].amount > 0) continue; // 정상 저장됨
+      if (snapshots[snapKey]) continue; // 이미 저장됨
 
       const tot    = group.slots.reduce((a,s) => a + getSlotTarget(s), 0);
       const amt    = group.slots.reduce((a,s) => a + getSlotAmount(s), 0);
@@ -793,8 +793,8 @@
       const groupDate   = groupKey.slice(0,10);
       const snapKey     = `${safe(groupKey)}__${safe(agencyId)}__${safe(userId2)}`;
       const savedSnap   = snapshots[snapKey];
-      // amount>0인 스냅샷만 사용, 아니면 실시간 계산
-      const useSnap = savedSnap && savedSnap.amount > 0;
+      // 과거 날짜는 스냅샷, 오늘은 실시간
+      const useSnap = savedSnap;
       const groupTotal  = useSnap ? savedSnap.totalTarget : group.slots.reduce((a,s) => a + getSlotTarget(s), 0);
       const groupAmount = useSnap ? savedSnap.amount      : group.slots.reduce((a,s) => a + getSlotAmount(s), 0);
       const refund      = useSnap ? (savedSnap.refund||0) : getGroupRefund(groupKey, agencyId, userId2);

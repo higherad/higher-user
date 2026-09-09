@@ -1072,7 +1072,10 @@
 
     // 행마다 HA.addSlot이 /user-add-slot 프록시로 네트워크 왕복하므로, 순차 대기(for...of + await)면
     // 건수만큼 지연이 그대로 쌓인다(50건이면 왕복 50번). 서로 독립된 요청이라 병렬로 한 번에 쏨.
-    const results = await Promise.allSettled(validRows.map(row => HA.addSlot({
+    // 단, 병렬로 쏘면 서버 도착 순서가 뒤섞여 접수관리 쪽 정렬(createdAt)이 엑셀 행 순서와 달라지므로,
+    // 행 인덱스만큼 createdAt을 미리 어긋나게 만들어 보내 정렬 순서를 엑셀 순서에 고정한다.
+    const excelBaseTs = Date.now();
+    const results = await Promise.allSettled(validRows.map((row, i) => HA.addSlot({
       agencyId:    excelAgencyId,
       userId:      excelUserId,
       storeName:   row.storeName,
@@ -1084,6 +1087,7 @@
       days:        row.days,
       dailyTarget: row.dailyTarget,
       memo:        '',
+      createdAt:   new Date(excelBaseTs + i).toISOString(),
     })));
 
     let success = 0;

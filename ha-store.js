@@ -158,6 +158,7 @@ const HA = {
       memo:           data.memo          || '',
       days:           Number(data.days)        || 0,
       dailyTarget:    Number(data.dailyTarget) || 0,
+      createdAt:      data.createdAt      || undefined, // 엑셀 일괄접수 시 행 순서 고정용(개별 접수는 서버가 결정)
     });
     dispatch('ha:slots:updated');
     return result;
